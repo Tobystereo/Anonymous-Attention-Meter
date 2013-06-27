@@ -1,59 +1,140 @@
-<!DOCTYPE html>
-<html>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Anonymous-attention-meter : Proof of concept to measure a users attention. Implemented in JavaScript using the HeadTrackr.js library" />
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>sprites</title>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+			#myCanvas {
+				/*width: 800px;
+				height: 600px;*/
+				margin: 0 auto;
+				top: 0;
+				left: 0;
+				position: absolute;
+				z-index: 0;
+				background: none;
+			}
 
-    <title>Anonymous-attention-meter</title>
-  </head>
+			#inputCanvas {
+	/*			width: 800px;
+				height: 600px;*/
+				margin: 0;
+				top: 0;
+				left: 0;
+				position: absolute;
+				z-index: -1;
+			}
+		</style>
+		<script src="headtrackr.js"></script>
+	</head>
+	<body>
+		
+		<h1>The Anonymous Attention Meter</h1>
+		<canvas id="inputCanvas" style="display:block"></canvas>
+		<canvas id="myCanvas" ></canvas>
+		<video id="inputVideo" autoplay loop style="display:none"></video>
+	<script>
 
-  <body>
+		// Head Tracker
+		var videoInput = document.getElementById('inputVideo');
+		var canvasInput = document.getElementById('inputCanvas');
+		var htracker = new headtrackr.Tracker({ui : false, calcAngles: true});
+		htracker.init(videoInput, canvasInput);
+		htracker.start();
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/Tobystereo/Anonymous-Attention-Meter">View on GitHub</a>
+		var canvas = document.getElementById('myCanvas');
+		var context = canvas.getContext('2d');
+		var canvasWidth = 800;
+    	var canvasHeight = 600;	  
+      	var facedetected = false;
 
-          <h1 id="project_title">Anonymous-attention-meter</h1>
-          <h2 id="project_tagline">Proof of concept to measure a users attention. Implemented in JavaScript using the HeadTrackr.js library</h2>
+      	canvas.setAttribute('width', window.innerWidth);
+      	canvasInput.setAttribute('width', window.innerWidth);
+      	canvas.setAttribute('height', window.innerWidth*0.75);
+      	canvasInput.setAttribute('height', window.innerWidth*0.75);
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/Tobystereo/Anonymous-Attention-Meter/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/Tobystereo/Anonymous-Attention-Meter/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+		// document.addEventListener('headtrackrStatus', function (event) {
+		//     if (event.status == "no getUserMedia") {	text_status = "Sorry, your browser does not seem to support webcam access. Try downloading the latest Chrome or Opera browser and try again."; }
+		//     if (event.status == "detecting") {	text_status = "Detecting Face"; }
+		//     if (event.status == "found") {	text_status = "Face detected"; facedetected = true;}
+		// });
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a name="anonymous-attention-meter" class="anchor" href="#anonymous-attention-meter"><span class="octicon octicon-link"></span></a>Anonymous Attention Meter</h1>
+		document.addEventListener('facetrackingEvent', function (event) {
+			console.log("face_X: " + event.x + " face_Y: " + event.y) + " event.width: " + event.width;
+			console.log("face angle: " + event.angle);
+			drawCircle(event.x, event.y);
+		});
 
-<h1></h1>
-
-<p><strong>The Anonymous Attention Meter</strong> is a proof of concept of an attention measurement tool written in javascript using the HeadTrackr face tracking library</p>
-
-<h3>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
-
-<p>Anonymous Attention Meter is distributed under the <a href="http://www.opensource.org/licenses/MIT">MIT License</a>.</p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Anonymous-attention-meter maintained by <a href="https://github.com/Tobystereo">Tobystereo</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
+		context.fillStyle = "white";
+		context.font = "normal 12px sans-serif";
+		context.fillText(text_status, canvasWidth/2, canvasHeight/2);
 
     
 
-  </body>
+    function drawCircle(x, y) {
+
+      	
+		var radius = 70;
+
+		// clear the canvas so no artifacts are left
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		var loc_x = map(x, 0, 800, 0, canvas.width);
+		var loc_y = map(y, 0, 600, 0, canvas.height);
+
+
+		// anonymous mask
+		var imageloaded = false;
+		var img = new Image();
+		img.src = 'anonymous_mask.png';
+		context.drawImage(img,event.x-event.width/2,event.y-event.height/2, event.width, event.height);
+
+		// Circle
+		// context.beginPath();
+		// context.arc(loc_x, loc_y, event.width, 0, 2 * Math.PI, false);
+		// context.fillStyle = 'green';
+		// context.fill();
+		// context.lineWidth = 5;
+		// context.strokeStyle = 'rgba(255, 255, 255, .9)';
+		// context.stroke();
+
+		context.beginPath();
+		var text_copy;
+		var text_label = "Attention Level";
+		if(event.angle >= 1.5 && event.angle <= 1.6) {
+			context.fillStyle = 'red';
+			text_copy = "HIGH";
+		} else if (event.angle >= 1.4 && event.angle < 1.5 || event.angle > 1.6 && event.angle <= 1.7) {
+			context.fillStyle = 'orange';
+			text_copy = "MEDIUM";
+		} else {
+			context.fillStyle = 'blue';
+			text_copy = "LOW";
+		}
+		context.fillRect(canvasWidth-100, 0, canvasWidth, 100);
+
+		context.font = "bold 36px sans-serif";
+		context.fillStyle = "white";
+		context.fillText(text_copy, canvasWidth-90, 60);
+		context.font = "normal 12px sans-serif";
+		context.fillText(text_label, canvasWidth-90, 20);
+	}
+
+	function map(value, originalMin, originalMax, targetMin, targetMax) {
+		var returnValue = targetMin + ((value-originalMin) / (originalMax-originalMin) * (targetMax-targetMin));
+		return returnValue;
+	}
+
+
+	</script>
+	</body>
 </html>
